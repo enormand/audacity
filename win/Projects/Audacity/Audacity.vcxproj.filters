@@ -851,6 +851,9 @@
     <ClCompile Include="..\..\..\src\effects\VST\VSTControlMSW.cpp">
       <Filter>src\effects\VST</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\effects\Dummy.cpp">
+      <Filter>src\effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\AboutDialog.h">
@@ -1713,6 +1716,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\TrackPanelListener.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\effects\Dummy.h">
+      <Filter>src\effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

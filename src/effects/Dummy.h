@@ -64,9 +64,12 @@ private:
    void OnPeakText(wxCommandEvent & evt);
    void OnAmpSlider(wxCommandEvent & evt);
    void OnClipCheckBox(wxCommandEvent & evt);
+   void OnSamplingPointsText(wxCommandEvent & evt);
    void CheckClip();
 
 private:
+   int mSamplingPoints;
+
    double mPeak;
 
    double mRatio;
@@ -79,6 +82,7 @@ private:
    wxTextCtrl *mAmpT;
    wxTextCtrl *mNewPeakT;
    wxCheckBox *mClip;
+   wxTextCtrl *mSamplingPointsT;
 
    DECLARE_EVENT_TABLE();
 };

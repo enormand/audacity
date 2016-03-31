@@ -39,14 +39,16 @@ enum
 {
    ID_Amp = 10000,
    ID_Peak,
-   ID_Clip
+   ID_Clip,
+   ID_SamplingPoints
 };
 
 // Define keys, defaults, minimums, and maximums for the effect parameters
 //
-//     Name       Type     Key                     Def         Min         Max            Scale
-Param( Ratio,     float,   XO("Ratio"),            0.9f,       0.003162f,  316.227766f,   1.0f  );
-Param( Amp,       float,   wxT(""),                -0.91515f,  -50.0f,     50.0f,         10.0f );
+//     Name             Type     Key                     Def         Min         Max            Scale
+Param( Ratio,           float,   XO("Ratio"),            0.9f,       0.003162f,  316.227766f,   1.0f  );
+Param( Amp,             float,   wxT(""),                -0.91515f,  -50.0f,     50.0f,         10.0f );
+Param( SamplingPoints,  float,   XO("Sampling Points"),  1,          1,          1000,          1);
 
 //
 // EffectDummy
@@ -57,6 +59,7 @@ BEGIN_EVENT_TABLE(EffectDummy, wxEvtHandler)
    EVT_TEXT(ID_Amp, EffectDummy::OnAmpText)
    EVT_TEXT(ID_Peak, EffectDummy::OnPeakText)
    EVT_CHECKBOX(ID_Clip, EffectDummy::OnClipCheckBox)
+   EVT_TEXT(ID_SamplingPoints, EffectDummy::OnSamplingPointsText)
 END_EVENT_TABLE()
 
 EffectDummy::EffectDummy()
@@ -66,6 +69,7 @@ EffectDummy::EffectDummy()
    mRatioClip = 0.0;
    mCanClip = false;
    mPeak = 0.0;
+   mSamplingPoints = 1;
 
    SetLinearEffectFlag(true);
 }
@@ -107,9 +111,21 @@ int EffectDummy::GetAudioOutCount()
 
 sampleCount EffectDummy::ProcessBlock(float **inBlock, float **outBlock, sampleCount blockLen)
 {
-   for (sampleCount i = 0; i < blockLen; i++)
+   for (sampleCount subBlock = 0; subBlock < blockLen; subBlock += mSamplingPoints)
    {
-      outBlock[0][i] = inBlock[0][i] * mRatio;
+      sampleCount subBlockLen = subBlock + mSamplingPoints;
+      float meanValue = 0.0f;
+
+      for (sampleCount i = subBlock; i < subBlockLen; i++)
+      {
+         meanValue += inBlock[0][i];
+      }
+      meanValue /= mSamplingPoints;
+
+     for (sampleCount i = subBlock; i < subBlockLen; i++)
+      {
+         outBlock[0][i] = meanValue;
+      }
    }
 
    return blockLen;
@@ -207,6 +223,16 @@ void EffectDummy::PopulateOrExchange(ShuttleGui & S)
 
    S.StartVerticalLay(0);
    {
+      // Sampling points
+      S.StartMultiColumn(2, wxCENTER);
+      {
+         IntegerValidator<int> vldSamplingPoints(&mSamplingPoints);
+         vldSamplingPoints.SetRange(MIN_SamplingPoints, MAX_SamplingPoints);
+         mSamplingPointsT = S.Id(ID_SamplingPoints).AddTextBox(_("Number of sampling points to merge:"), wxT(""), 10);
+         mSamplingPointsT->SetValidator(vldSamplingPoints);
+      }
+      S.EndMultiColumn();
+
       int precission = 3; // allow (a generous) 3 decimal  places for Amplification (dB)
       // Amplitude
       S.StartMultiColumn(2, wxCENTER);
@@ -264,6 +290,11 @@ void EffectDummy::PopulateOrExchange(ShuttleGui & S)
 
 bool EffectDummy::TransferDataToWindow()
 {
+   /*if (!mUIParent->TransferDataToWindow())
+   {
+      return false;
+   }*/
+
    // limit range of gain
    double dBInit = LINEAR_TO_DB(mRatio);
    double dB = TrapDouble(dBInit, MIN_Amp, MAX_Amp);
@@ -379,4 +410,9 @@ void EffectDummy::OnAmpSlider(wxCommandEvent & evt)
 void EffectDummy::OnClipCheckBox(wxCommandEvent & WXUNUSED(evt))
 {
    CheckClip();
+}
+
+void EffectDummy::OnSamplingPointsText(wxCommandEvent & WXUNUSED(evt))
+{
+   mSamplingPointsT->GetValidator()->TransferFromWindow();
 }

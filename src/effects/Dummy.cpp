@@ -31,13 +31,15 @@ enum kModes
 {
    kAverage,
    kFirst,
+   kLinear,
    kNumModes
 };
 
 static const wxChar *kModeStrings[kNumModes] =
 {
    XO("Average of the points"),
-   XO("First point value")
+   XO("First point value"),
+   XO("Linear function")
 };
 
 // Define keys, defaults, minimums, and maximums for the effect parameters
@@ -118,7 +120,7 @@ sampleCount EffectDummy::ProcessBlock(float **inBlock, float **outBlock, sampleC
       }
       else if (mModesIndex == kFirst)
       {
-         for (sampleCount i = subBlock; i <= subBlockLen; i++)
+         for (sampleCount i = subBlock; i < subBlockLen; i++)
          {
             outBlock[0][i] = inBlock[0][subBlock];
          }
@@ -135,6 +137,17 @@ sampleCount EffectDummy::ProcessBlock(float **inBlock, float **outBlock, sampleC
          for (sampleCount i = subBlock; i < subBlockLen; i++)
          {
             outBlock[0][i] = newValue;
+         }
+      }
+      else if (mModesIndex == kLinear)
+      {
+         float slope = (inBlock[0][subBlockLen - 1] - inBlock[0][subBlock])
+            / (float)(subBlockLen - subBlock);
+         float intercept = inBlock[0][subBlock] - slope * subBlock;
+
+         for (sampleCount i = subBlock; i < subBlockLen; i++)
+         {
+            outBlock[0][i] = slope * i + intercept;
          }
       }
    }

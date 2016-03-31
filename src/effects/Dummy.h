@@ -59,11 +59,18 @@ private:
    // EffectDummy implementation
 
    void OnSamplingPointsText(wxCommandEvent & evt);
+   void OnSamplingPointsSlider(wxCommandEvent & evt);
+   void OnSamplingPoints();
 
 private:
    int mSamplingPoints;
+   int mModesIndex;
+   
+   wxArrayString mModes;
 
    wxTextCtrl *mSamplingPointsT;
+   wxSlider *mSamplingPointsS;
+   wxChoice *mModesC;
 
    DECLARE_EVENT_TABLE();
 };
